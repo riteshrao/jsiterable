@@ -8,7 +8,7 @@
     "coverage": "npm run test && opener ./coverage/index.html",
     "build": "tsc",
     "test": "nyc mocha",
-    "prepublishOnly": "npm run clean && nom run test"
+    "prepublishOnly": "npm run clean && npm run test"
   },
   "repository": {
     "type": "git",
