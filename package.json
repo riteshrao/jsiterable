@@ -1,6 +1,6 @@
 {
-  "name": "iterable-js",
-  "version": "1.0.0",
+  "name": "jsiterable",
+  "version": "1.0.1",
   "description": "No-dependency javascript iterable library exposing functional operations over iterables",
   "main": "./lib/index.js",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/riteshrao/iterable-js.git"
+    "url": "git+https://github.com/riteshrao/jsiterable.git"
   },
   "keywords": [
     "Iterables",
@@ -21,9 +21,9 @@
   "author": "Ritesh Rao",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/riteshrao/iterable-js/issues"
+    "url": "https://github.com/riteshrao/jsiterable/issues"
   },
-  "homepage": "https://github.com/riteshrao/iterable-js#readme",
+  "homepage": "https://github.com/riteshrao/jsiterable#readme",
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/mocha": "^5.2.6",
