@@ -1,0 +1,63 @@
+{
+  "name": "iterable-js",
+  "version": "1.0.0",
+  "description": "No-dependency javascript iterable library exposing functional operations over iterables",
+  "main": "./lib/index.js",
+  "scripts": {
+    "clean": "rimraf ./lib && rimraf ./coverage",
+    "coverage": "npm run test && opener ./coverage/index.html",
+    "build": "tsc",
+    "test": "nyc mocha",
+    "prepublishOnly": "npm run clean && nom run test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/riteshrao/iterable-js.git"
+  },
+  "keywords": [
+    "Iterables",
+    "Functional"
+  ],
+  "author": "Ritesh Rao",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/riteshrao/iterable-js/issues"
+  },
+  "homepage": "https://github.com/riteshrao/iterable-js#readme",
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.6",
+    "chai": "^4.2.0",
+    "mocha": "^6.0.2",
+    "nyc": "^13.3.0",
+    "opener": "^1.5.1",
+    "rimraf": "^2.6.3",
+    "source-map-support": "^0.5.11",
+    "ts-node": "^8.0.3",
+    "tslint": "^5.14.0",
+    "tslint-no-unused-expression-chai": "^0.1.4",
+    "typescript": "^3.3.3333"
+  },
+  "nyc": {
+    "all": true,
+    "cache": false,
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "**/*.d.ts",
+      "test/**",
+      "src/types.ts"
+    ],
+    "reporter": [
+      "html",
+      "json",
+      "text-summary"
+    ],
+    "extension": [
+      ".ts"
+    ],
+    "source-map": true,
+    "instrument": true
+  }
+}

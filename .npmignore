@@ -1,0 +1,11 @@
+/*.tgz
+/node_modules/
+/.nyc_output/
+/src/
+/coverage/
+/src/
+/test/
+/.mocharc.json
+/tsconfig.json
+/tslint.json
+/wallaby.js
