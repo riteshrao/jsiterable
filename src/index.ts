@@ -152,6 +152,17 @@ export class Iterable<T> implements LibIterable<T> {
 
         return false;
     }
+
+    /**
+     * @description Gets an empty iterable.
+     * @static
+     * @template T The element type of the iterable.
+     * @returns {Iterable<T>}
+     * @memberof Iterable
+     */
+    static empty<T>(): Iterable<T> {
+        return new Iterable<T>([]);
+    }
 }
 
 export default Iterable;
