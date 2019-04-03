@@ -1,6 +1,6 @@
 {
   "name": "jsiterable",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "No-dependency javascript iterable library exposing functional operations over iterables",
   "main": "./lib/index.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "coverage": "npm run test && opener ./coverage/index.html",
     "build": "tsc",
     "test": "nyc mocha",
-    "prepublishOnly": "npm run clean && npm run test"
+    "prepublishOnly": "npm run clean && npm run build && npm run test"
   },
   "repository": {
     "type": "git",
