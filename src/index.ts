@@ -1,4 +1,4 @@
-import LibIterable from './types';
+import LibIterable from "./types";
 
 /**
  * @description Iterable wrapper that exposes functional operations to work with arrays, maps, sets and generic iterables
@@ -8,25 +8,28 @@ import LibIterable from './types';
  * @template T
  */
 export class Iterable<T> implements LibIterable<T> {
-    private readonly _source: IterableIterator<T>;
+    private readonly _source: LibIterable<T>;
+
     /**
      * Creates an instance of Iterable.
      * @param {IterableIterator<T>} source The source iterable iterator to use. This can be any object that supports the {Symbol.iterator} symbol.
      * @memberof Iterable
      */
-    constructor(source: { [Symbol.iterator]: () => IterableIterator<T> }) {
+    constructor(source: { [Symbol.iterator]: () => Iterator<T> }) {
         if (!source) {
             throw new ReferenceError(`Invalid source. source is '${source}'`);
         }
         if (!source[Symbol.iterator]) {
-            throw new ReferenceError(`Invalid source. source does not define a member for [Symbol.iterator]. Only iterables and iterable like sources are allowed`);
+            throw new ReferenceError(
+                `Invalid source. source does not define a member for [Symbol.iterator]. Only iterables and iterable like sources are allowed`
+            );
         }
 
-        this._source = source[Symbol.iterator]();
+        this._source = source;
     }
 
     [Symbol.iterator](): Iterator<T> {
-        return this._source;
+        return this._source[Symbol.iterator]();
     }
 
     /**
@@ -64,21 +67,23 @@ export class Iterable<T> implements LibIterable<T> {
         }
 
         const _that = this;
-        return new Iterable<T>((function* filterGenerator() {
-            for (const item of _that._source) {
-                if (filter(item)) {
-                    yield item;
+        return new Iterable<T>(
+            (function* filterGenerator() {
+                for (const item of _that._source) {
+                    if (filter(item)) {
+                        yield item;
+                    }
                 }
-            }
-        })());
+            })()
+        );
     }
 
     /**
-    * @description Gets the first element from the source iterable.
-    * @param {(item: T) => boolean} [filter] Optional filter applied to find the first matching element.
-    * @returns {T} The first element from the source iterable.
-    * @memberof Iterable
-    */
+     * @description Gets the first element from the source iterable.
+     * @param {(item: T) => boolean} [filter] Optional filter applied to find the first matching element.
+     * @returns {T} The first element from the source iterable.
+     * @memberof Iterable
+     */
     first(filter?: (item: T) => boolean): T {
         if (filter) {
             for (const item of this._source) {
@@ -89,7 +94,7 @@ export class Iterable<T> implements LibIterable<T> {
 
             return null;
         } else {
-            return this._source.next().value || null;
+            return this._source[Symbol.iterator]().next().value || null;
         }
     }
 
@@ -111,11 +116,13 @@ export class Iterable<T> implements LibIterable<T> {
      */
     map<V>(selector: (item: T) => V): Iterable<V> {
         const _that = this;
-        return new Iterable<V>((function* mapGenerator() {
-            for (const item of _that._source) {
-                yield selector(item);
-            }
-        })());
+        return new Iterable<V>(
+            (function* mapGenerator() {
+                for (const item of _that._source) {
+                    yield selector(item);
+                }
+            })()
+        );
     }
 
     /**
@@ -127,14 +134,16 @@ export class Iterable<T> implements LibIterable<T> {
      */
     mapMany<V>(selector: (item: T) => LibIterable<V>): Iterable<V> {
         const _that = this;
-        return new Iterable<V>((function* mapManyGenerator() {
-            for (const item of _that._source) {
-                const iterable = selector(item);
-                for (const value of iterable) {
-                    yield value;
+        return new Iterable<V>(
+            (function* mapManyGenerator() {
+                for (const item of _that._source) {
+                    const iterable = selector(item);
+                    for (const value of iterable) {
+                        yield value;
+                    }
                 }
-            }
-        })());
+            })()
+        );
     }
 
     /**
