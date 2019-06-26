@@ -47,7 +47,7 @@ describe('Iterable', () => {
         });
 
         it('.distinct should return distinct entries', () => {
-            const items = iterable.distinct().items();
+            const items = iterable.distinct(x => x).items();
             expect(items.length).to.equal(9);
             expect(items.filter(x => x === 'charlie').length).to.equal(1);
         });
@@ -89,7 +89,7 @@ describe('Iterable', () => {
             const items = iterable
                 .map(x => x.split(''))
                 .mapMany(x => x)
-                .distinct()
+                .distinct(x => x)
                 .items();
 
             expect(items.length).to.equal(17); // Distinct characters
@@ -131,7 +131,7 @@ describe('Iterable', () => {
         it('.distinct should return distinct entries', () => {
             const items = iterable
                 .map(([, value]) => value)
-                .distinct()
+                .distinct(x => x)
                 .items();
             expect(items.length).to.equal(9);
         });
@@ -158,7 +158,7 @@ describe('Iterable', () => {
             const items = iterable
                 .map(([, value]) => value.split(''))
                 .mapMany(x => x)
-                .distinct()
+                .distinct(x => x)
                 .items();
 
             expect(items.length).to.equal(17); // Distinct characters
@@ -219,7 +219,7 @@ describe('Iterable', () => {
             const items = iterable
                 .map(x => x.split(''))
                 .mapMany(x => x)
-                .distinct()
+                .distinct(x => x)
                 .items();
 
             expect(items.length).to.equal(17); // Distinct characters
@@ -259,7 +259,7 @@ describe('Iterable', () => {
         });
 
         it('.distinct should return distinct entries', () => {
-            const items = iterable.distinct().items();
+            const items = iterable.distinct(x => x).items();
             expect(items.length).to.equal(9);
             expect(items.filter(x => x === 'charlie').length).to.equal(1);
         });
@@ -286,7 +286,7 @@ describe('Iterable', () => {
             const items = iterable
                 .map(x => x.split(''))
                 .mapMany(x => x)
-                .distinct()
+                .distinct(x => x)
                 .items();
 
             expect(items.length).to.equal(17); // Distinct characters
@@ -326,7 +326,7 @@ describe('Iterable', () => {
         });
 
         it('.distinct should return distinct entries', () => {
-            const items = iterable.distinct().items();
+            const items = iterable.distinct(x => x).items();
             expect(items.length).to.equal(9);
             expect(items.filter(x => x === 'charlie').length).to.equal(1);
         });
@@ -357,7 +357,7 @@ describe('Iterable', () => {
             const items = iterable
                 .map(x => x.split(''))
                 .mapMany(x => x)
-                .distinct()
+                .distinct(x => x)
                 .items();
 
             expect(items.length).to.equal(17); // Distinct characters

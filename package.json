@@ -1,6 +1,6 @@
 {
     "name": "jsiterable",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "description": "No-dependency javascript iterable library exposing functional operations over iterables",
     "main": "./lib/index.js",
     "scripts": {

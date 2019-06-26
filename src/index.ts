@@ -1,4 +1,4 @@
-import LibIterable from "./types";
+import LibIterable from './types';
 
 /**
  * @description Iterable wrapper that exposes functional operations to work with arrays, maps, sets and generic iterables
@@ -46,13 +46,22 @@ export class Iterable<T> implements LibIterable<T> {
      * @returns {Iterable<T>} Iterable containing distinct entities.
      * @memberof Iterable
      */
-    distinct(): Iterable<T> {
-        const set = new Set<T>();
-        for (const item of this._source) {
-            set.add(item);
+    distinct(keySelector: (item: T) => any): Iterable<T> {
+        if (!keySelector) {
+            throw new ReferenceError(`Invalid keySelector. keySelector is ${keySelector}`);
         }
 
-        return new Iterable<T>(set.values());
+        const set = new Set<T>();
+        const _that = this;
+        return new Iterable<T>((function* distinctGenerator() {
+            for (const item of _that._source) {
+                const key = keySelector(item);
+                if (!set.has(key)) {
+                    set.add(key);
+                    yield item;
+                }
+            }
+        })());
     }
 
     /**
@@ -67,15 +76,13 @@ export class Iterable<T> implements LibIterable<T> {
         }
 
         const _that = this;
-        return new Iterable<T>(
-            (function* filterGenerator() {
-                for (const item of _that._source) {
-                    if (filter(item)) {
-                        yield item;
-                    }
+        return new Iterable<T>((function* filterGenerator() {
+            for (const item of _that._source) {
+                if (filter(item)) {
+                    yield item;
                 }
-            })()
-        );
+            }
+        })());
     }
 
     /**
