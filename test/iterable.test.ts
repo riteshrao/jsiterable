@@ -13,7 +13,7 @@ describe('Iterable', () => {
     });
     
     it('.ctor shoud support generators', () => {
-        const iterable = new Iterable(function* () {
+        const iterable = new Iterable(function* foo() {
             yield 1;
             yield 2;
         });
@@ -100,15 +100,6 @@ describe('Iterable', () => {
             expect(items[9]).to.equal('charlie9');
         });
 
-        it('.forEach should iterate over all items', () => {
-            const items: string[] = [];
-            iterable.forEach((x, i) => items.push(x + i.toString()));
-            expect(items.length).to.equal(10);
-            expect(items[0]).to.equal('alpha0');
-            expect(items[5]).to.equal('foxtrot5');
-            expect(items[9]).to.equal('charlie9');
-        });
-
         it('.mapMany should map all items', () => {
             const items = iterable
                 .map(x => x.split(''))
@@ -133,34 +124,6 @@ describe('Iterable', () => {
 
         it('.every should return false when any element does not match condition', () => {
             expect(iterable.every(x => x === 'alpha')).to.be.false;
-        });
-
-        it('.sort should sort numbers automatically', () => {
-            const items = new Iterable([1, 3, 2]);
-            expect(items.sort().items(), 'sorted array').to.eql([1, 2, 3]);
-            
-            // assert we didn't mutate the original array:
-            expect(items.items(), 'original array').to.eql([1, 3, 2]);
-        });
-        
-        it('.sort should sort strings automatically', () => {
-            const items = new Iterable(['a', 'c', 'b']);
-            expect(items.sort().items(), 'sorted array').to.eql(['a', 'b', 'c']);
-        });
-
-        it('.sort should sort objects', () => {
-            const items = new Iterable([
-                { str: 'a' }, 
-                { str: 'c' }, 
-                { str: 'b' }, 
-            ]);
-            
-            const result = items
-                .sort((a, b) => a.str.localeCompare(b.str))
-                .map(x => x.str)
-                .items();
-            
-            expect(result).to.eql(['a', 'b', 'c']);
         });
     });
 

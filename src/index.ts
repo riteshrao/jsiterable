@@ -13,13 +13,15 @@ export class Iterable<T> implements LibIterable<T> {
     /**
      * Creates an instance of Iterable.
      * @param {Iterable<T>} source The source iterable to use. This can be any object that supports
-     * the {Symbol.iterator} symbol, or a function that returns an Iterator (e.g., a generator)
+     * the {Symbol.iterator} symbol, or a function that returns an Iterable (e.g., a generator)
      * @memberof Iterable
      */
-    constructor(source: LibIterable<T> | (() => Iterator<T>)) {
+    constructor(source: LibIterable<T> | (() => LibIterable<T>)) {
         if (typeof source === 'function') {
-            // source is an function that returns an Iterator. Convert it to a es6 Iterable:
-            this._source = { [Symbol.iterator]: source };
+            // source is an function that returns an Iterable. Get its iterator:
+            this._source = { 
+                [Symbol.iterator]: () => source()[Symbol.iterator]() 
+            };
         } else if (source && typeof source[Symbol.iterator] === 'function') {
             // source is a es6 iterable, use as-is:
             this._source = source;
@@ -128,18 +130,6 @@ export class Iterable<T> implements LibIterable<T> {
     mapMany<V>(selector: (item: T, index: number) => LibIterable<V>): Iterable<V> {
         return new Iterable<V>(this._mapManyGenerator.bind(this, selector));
     }
-    
-    /**
-     * @description Performs the specified action for each element in the source
-     * @param {(item: T, index: number) => void} The callback function to invoke
-     * @memberof Iterable
-     */
-    forEach(callback: (item: T, index: number) => void): void {
-        let index = 0;
-        for (const item of this._source) {
-            callback(item, index++);
-        }
-    }
 
     /**
      * @description Determines whether the supplied callback function returns true for any element in the source.
@@ -173,17 +163,6 @@ export class Iterable<T> implements LibIterable<T> {
         }
 
         return true;
-    }
-    
-    /**
-     * @description Sorts the source
-     * @param {(a: T, b: T) => number} compareFn The function used to 
-     * determine the order of the elements. If omitted, the elements are sorted
-     * in ascending, ASCII character order.
-     * @memberof Iterable
-     */
-    sort(compare?: (a: T, b: T) => number): Iterable<T> {
-        return new Iterable(this.items().sort(compare));
     }
     
     /**
