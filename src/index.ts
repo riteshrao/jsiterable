@@ -12,20 +12,22 @@ export class Iterable<T> implements LibIterable<T> {
 
     /**
      * Creates an instance of Iterable.
-     * @param {IterableIterator<T>} source The source iterable iterator to use. This can be any object that supports the {Symbol.iterator} symbol.
+     * @param {Iterable<T>} source The source iterable to use. This can be any object that supports
+     * the {Symbol.iterator} symbol, or a function that returns an Iterator (e.g., a generator)
      * @memberof Iterable
      */
-    constructor(source: { [Symbol.iterator]: () => Iterator<T> }) {
-        if (!source) {
-            throw new ReferenceError(`Invalid source. source is '${source}'`);
-        }
-        if (!source[Symbol.iterator]) {
+    constructor(source: LibIterable<T> | (() => Iterator<T>)) {
+        if (typeof source === 'function') {
+            // source is an function that returns an Iterator. Convert it to a es6 Iterable:
+            this._source = { [Symbol.iterator]: source };
+        } else if (source && typeof source[Symbol.iterator] === 'function') {
+            // source is a es6 iterable, use as-is:
+            this._source = source;
+        } else {
             throw new ReferenceError(
                 `Invalid source. source does not define a member for [Symbol.iterator]. Only iterables and iterable like sources are allowed`
             );
         }
-
-        this._source = source;
     }
 
     [Symbol.iterator](): Iterator<T> {
@@ -38,7 +40,13 @@ export class Iterable<T> implements LibIterable<T> {
      * @memberof Iterable
      */
     count(): number {
-        return [...this._source].length;
+        if (Array.isArray(this._source)) {
+            return this._source.length;
+        } else {
+            let num = 0;
+            for (let _ of this._source) ++num;
+            return num;
+        }
     }
 
     /**
@@ -46,49 +54,47 @@ export class Iterable<T> implements LibIterable<T> {
      * @returns {Iterable<T>} Iterable containing distinct entities.
      * @memberof Iterable
      */
-    distinct(keySelector: (item: T) => any): Iterable<T> {
+    distinct(keySelector: (item: T, index: number) => any): Iterable<T> {
         if (!keySelector) {
             throw new ReferenceError(`Invalid keySelector. keySelector is ${keySelector}`);
         }
 
-        return new Iterable<T>({
-            [Symbol.iterator]: this._distinctGenerator.bind(this, keySelector)
-        });
+        return new Iterable<T>(this._distinctGenerator.bind(this, keySelector));
     }
 
     /**
      * @description Returns an iterable that returns only filtered elements from the source.
-     * @param {(item: T) => boolean} filter The filter to apply on the source.
+     * @param {(item: T, index: number) => boolean} filter The filter to apply on the source.
      * @returns {Iterable<T>} Iterable containing filtered entities.
      * @memberof Iterable
      */
-    filter(filter: (item: T) => boolean): Iterable<T> {
+    filter(filter: (item: T, index: number) => boolean): Iterable<T> {
         if (!filter) {
             throw new ReferenceError(`Invalid filter. filter is '${filter}'`);
         }
 
-        return new Iterable<T>({
-            [Symbol.iterator]: this._filterGenerator.bind(this, filter)
-        });
+        return new Iterable<T>(this._filterGenerator.bind(this, filter));
     }
 
     /**
      * @description Gets the first element from the source iterable.
-     * @param {(item: T) => boolean} [filter] Optional filter applied to find the first matching element.
+     * @param {(item: T, index: number) => boolean} [filter] Optional filter applied to find the first matching element.
      * @returns {T} The first element from the source iterable.
      * @memberof Iterable
      */
-    first(filter?: (item: T) => boolean): T {
+    first(filter?: (item: T, index: number) => boolean): T {
         if (filter) {
+            let index = 0;
             for (const item of this._source) {
-                if (filter(item)) {
+                if (filter(item, index++)) {
                     return item;
                 }
             }
 
             return null;
         } else {
-            return this._source[Symbol.iterator]().next().value || null;
+            const { done, value } = this._source[Symbol.iterator]().next();
+            return done ? null : value;
         }
     }
 
@@ -104,45 +110,82 @@ export class Iterable<T> implements LibIterable<T> {
     /**
      * @description Calls a callback for each item in the source and returns the returned value from the callback.
      * @template V
-     * @param {(item: T) => V} selector The callback function to invoke for each element in the source.
+     * @param {(item: T, index: number) => V} selector The callback function to invoke for each element in the source.
      * @returns {Iterable<V>}
      * @memberof Iterable
      */
-    map<V>(selector: (item: T) => V): Iterable<V> {
-        return new Iterable<V>({
-            [Symbol.iterator]: this._mapGenerator.bind(this, selector)
-        });
+    map<V>(selector: (item: T, index: number) => V): Iterable<V> {
+        return new Iterable<V>(this._mapGenerator.bind(this, selector));
     }
 
     /**
      * @description Calls a callback for each item in the source and returns individual result values from the callback.
      * @template V
-     * @param {(item: T) => Iterable<V>} selector The callback function to invoke for each element in the source.
+     * @param {(item: T, index: number) => Iterable<V>} selector The callback function to invoke for each element in the source.
      * @returns {Iterable<V>}
      * @memberof Iterable
      */
-    mapMany<V>(selector: (item: T) => LibIterable<V>): Iterable<V> {
-        return new Iterable<V>({
-            [Symbol.iterator]: this._mapManyGenerator.bind(this, selector)
-        });
+    mapMany<V>(selector: (item: T, index: number) => LibIterable<V>): Iterable<V> {
+        return new Iterable<V>(this._mapManyGenerator.bind(this, selector));
+    }
+    
+    /**
+     * @description Performs the specified action for each element in the source
+     * @param {(item: T, index: number) => void} The callback function to invoke
+     * @memberof Iterable
+     */
+    forEach(callback: (item: T, index: number) => void): void {
+        let index = 0;
+        for (const item of this._source) {
+            callback(item, index++);
+        }
     }
 
     /**
      * @description Determines whether the supplied callback function returns true for any element in the source.
-     * @param {(item: T) => boolean} filter The callback function to invoke.
+     * @param {(item: T, index: number) => boolean} filter The callback function to invoke.
      * @returns {boolean}
      * @memberof Iterable
      */
-    some(filter: (item: T) => boolean): boolean {
+    some(filter: (item: T, index: number) => boolean): boolean {
+        let index = 0;
         for (const item of this._source) {
-            if (filter(item)) {
+            if (filter(item, index++)) {
                 return true;
             }
         }
 
         return false;
     }
+    
+    /**
+     * @description Determines whether all elements in the source satisfy the specified test.
+     * @param {(item: T, index: number) => boolean} test The test function.
+     * @returns {boolean}
+     * @memberof Iterable
+     */
+    every(test: (item: T, index: number) => boolean): boolean {
+        let index = 0;
+        for (const item of this._source) {
+            if (!test(item, index++)) {
+                return false;
+            }
+        }
 
+        return true;
+    }
+    
+    /**
+     * @description Sorts the source
+     * @param {(a: T, b: T) => number} compareFn The function used to 
+     * determine the order of the elements. If omitted, the elements are sorted
+     * in ascending, ASCII character order.
+     * @memberof Iterable
+     */
+    sort(compare?: (a: T, b: T) => number): Iterable<T> {
+        return new Iterable(this.items().sort(compare));
+    }
+    
     /**
      * @description Gets an empty iterable.
      * @static
@@ -154,10 +197,11 @@ export class Iterable<T> implements LibIterable<T> {
         return new Iterable<T>([]);
     }
 
-    private *_distinctGenerator(keySelector: (item: T) => any) {
+    private *_distinctGenerator(keySelector: (item: T, index: number) => any) {
         const set = new Set<T>();
+        let index = 0;
         for (const item of this._source) {
-            const key = keySelector(item);
+            const key = keySelector(item, index++);
             if (!set.has(key)) {
                 set.add(key);
                 yield item;
@@ -165,26 +209,26 @@ export class Iterable<T> implements LibIterable<T> {
         }
     }
 
-    private *_filterGenerator(filter: (item: T) => boolean) {
+    private *_filterGenerator(filter: (item: T, index: number) => boolean) {
+        let index = 0;
         for (const item of this._source) {
-            if (filter(item)) {
+            if (filter(item, index++)) {
                 yield item;
             }
         }
     }
 
-    private *_mapGenerator<V>(selector: (item: T) => LibIterable<V>) {
+    private *_mapGenerator<V>(selector: (item: T, index: number) => LibIterable<V>) {
+        let index = 0;
         for (const item of this._source) {
-            yield selector(item);
+            yield selector(item, index++);
         }
     }
 
-    private *_mapManyGenerator<V>(selector: (item: T) => LibIterable<V>) {
+    private *_mapManyGenerator<V>(selector: (item: T, index: number) => LibIterable<V>) {
+        let index = 0;
         for (const item of this._source) {
-            const iterable = selector(item);
-            for (const value of iterable) {
-                yield value;
-            }
+            yield* selector(item, index++);
         }
     }
 }
