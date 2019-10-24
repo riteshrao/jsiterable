@@ -18,9 +18,9 @@ export class Iterable<T> implements LibIterable<T> {
      */
     constructor(source: LibIterable<T> | (() => LibIterable<T>)) {
         if (typeof source === 'function') {
-            // source is an function that returns an Iterable. Get its iterator:
-            this._source = { 
-                [Symbol.iterator]: () => source()[Symbol.iterator]() 
+            // source is an function that returns an Iterable. Get its iterator lazily:
+            this._source = {
+                [Symbol.iterator]: () => source()[Symbol.iterator]()
             };
         } else if (source && typeof source[Symbol.iterator] === 'function') {
             // source is a es6 iterable, use as-is:
@@ -46,7 +46,7 @@ export class Iterable<T> implements LibIterable<T> {
             return this._source.length;
         } else {
             let num = 0;
-            for (let _ of this._source) ++num;
+            for (let _ of this._source) { ++num; }
             return num;
         }
     }
@@ -147,7 +147,7 @@ export class Iterable<T> implements LibIterable<T> {
 
         return false;
     }
-    
+
     /**
      * @description Determines whether all elements in the source satisfy the specified test.
      * @param {(item: T, index: number) => boolean} test The test function.
@@ -164,7 +164,7 @@ export class Iterable<T> implements LibIterable<T> {
 
         return true;
     }
-    
+
     /**
      * @description Gets an empty iterable.
      * @static

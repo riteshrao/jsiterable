@@ -11,13 +11,18 @@ describe('Iterable', () => {
         expect(() => new Iterable(null)).to.throw(ReferenceError);
         expect(() => new Iterable(undefined)).to.throw(ReferenceError);
     });
-    
+
     it('.ctor shoud support generators', () => {
         const iterable = new Iterable(function* foo() {
             yield 1;
             yield 2;
         });
 
+        expect(iterable.count()).to.equal(2);
+    });
+
+    it('.ctor shoud support lazy functions', () => {
+        const iterable = new Iterable(() => [1, 2]);
         expect(iterable.count()).to.equal(2);
     });
 
@@ -353,10 +358,10 @@ describe('Iterable', () => {
             expect(items.length).to.equal(9);
             expect(items.filter(x => x === 'charlie').length).to.equal(1);
         });
-        
+
         it('.distinct should be invocable multiple times', () => {
             const items = iterable.distinct(x => x);
-            
+
             // assert items can be iterated on multiple times
             expect(items.count()).to.equal(9);
             expect(items.count()).to.equal(9);
@@ -397,12 +402,12 @@ describe('Iterable', () => {
 
         it('.filter should be invocable multiple times', () => {
             const filtered = iterable.filter(x => x.startsWith('b'));
-            
+
             // assert filtered can be iterated on multiple times
             expect(filtered.first()).to.equal('bravo');
             expect(filtered.first()).to.equal('bravo');
         });
-        
+
         it('.map should map all items', () => {
             const items = iterable.map(x => x.length).items();
             expect(items.length).to.equal(10);
@@ -410,10 +415,10 @@ describe('Iterable', () => {
             expect(items[5]).to.equal(7);
             expect(items[9]).to.equal(7);
         });
-        
+
         it('.map should be invocable multiple times', () => {
             const items = iterable.map(x => x + '_map');
-            
+
             // assert items can be iterated on multiple times
             expect(items.first()).to.equal('alpha_map');
             expect(items.first()).to.equal('alpha_map');
