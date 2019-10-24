@@ -12,6 +12,15 @@ describe('Iterable', () => {
         expect(() => new Iterable(undefined)).to.throw(ReferenceError);
     });
 
+    it('.ctor shoud support generators', () => {
+        const iterable = new Iterable(function* () {
+            yield 1;
+            yield 2;
+        });
+
+        expect(iterable.count()).to.equal(2);
+    });
+
     it('.empty should return an empty iterable', () => {
         const iterable = Iterable.empty<string>();
         expect(iterable).to.be.ok;
@@ -331,6 +340,12 @@ describe('Iterable', () => {
             expect(items.filter(x => x === 'charlie').length).to.equal(1);
         });
 
+        it('.distinct should not store state between iterations', () => {
+            const items = iterable.distinct(x => x);
+            expect(items.count()).to.equal(9);
+            expect(items.count()).to.equal(9);
+        });
+
         it('.filter should filter items', () => {
             const items = iterable.filter(x => x.includes('l')).items();
             expect(items.length).to.equal(7);
@@ -340,9 +355,35 @@ describe('Iterable', () => {
         it('.first should get the first item', () => {
             expect(iterable.first()).to.equal('alpha');
         });
+        
+        it('.first should support empty string', () => {
+            iterable = new Iterable(['']);
+            expect(iterable.first()).to.equal('');
+        });
+        
+        it('.first should support 0', () => {
+            let iterable = new Iterable([0]);
+            expect(iterable.first()).to.equal(0);
+        });
+        
+        it('.first should support false', () => {
+            let iterable = new Iterable([false]);
+            expect(iterable.first()).to.equal(false);
+        });
+        
+        it('.first should support undefined', () => {
+            let iterable = new Iterable([undefined]);
+            expect(iterable.first()).to.equal(undefined);
+        });
 
         it('.filter should return first filtered item', () => {
             expect(iterable.first(x => x.startsWith('b'))).to.equal('bravo');
+        });
+
+        it('.filter should not store state between iterations', () => {
+            const filtered = iterable.filter(x => x.startsWith('b'));
+            expect(filtered.first()).to.equal('bravo');
+            expect(filtered.first()).to.equal('bravo');
         });
 
         it('.map should map all items', () => {
@@ -351,6 +392,12 @@ describe('Iterable', () => {
             expect(items[0]).to.equal(5);
             expect(items[5]).to.equal(7);
             expect(items[9]).to.equal(7);
+        });
+
+        it('.map should not store state between iterations', () => {
+            const items = iterable.map(x => x + '_map');
+            expect(items.first()).to.equal('alpha_map');
+            expect(items.first()).to.equal('alpha_map');
         });
 
         it('.mapMany should map all items', () => {
