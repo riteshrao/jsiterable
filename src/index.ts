@@ -44,9 +44,11 @@ export class Iterable<T> implements LibIterable<T> {
     count(): number {
         if (Array.isArray(this._source)) {
             return this._source.length;
+        } else if (this._source instanceof Set || this._source instanceof Map) {
+            return this._source.size;
         } else {
             let num = 0;
-            for (let _ of this._source) { ++num; }
+            for (const _ of this._source) { ++num; }
             return num;
         }
     }
