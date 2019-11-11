@@ -12,6 +12,20 @@ describe('Iterable', () => {
         expect(() => new Iterable(undefined)).to.throw(ReferenceError);
     });
 
+    it('.ctor shoud support generators', () => {
+        const iterable = new Iterable(function* foo() {
+            yield 1;
+            yield 2;
+        });
+
+        expect(iterable.count()).to.equal(2);
+    });
+
+    it('.ctor shoud support lazy functions', () => {
+        const iterable = new Iterable(() => [1, 2]);
+        expect(iterable.count()).to.equal(2);
+    });
+
     it('.empty should return an empty iterable', () => {
         const iterable = Iterable.empty<string>();
         expect(iterable).to.be.ok;
@@ -22,6 +36,12 @@ describe('Iterable', () => {
         const iterable = new Iterable([1, 2, 3]);
         expect(() => iterable.filter(null)).to.throw(ReferenceError);
         expect(() => iterable.filter(undefined)).to.throw(ReferenceError);
+    });
+
+    it('.distinct should throw when selector is null or undefined', () => {
+        const iterable = new Iterable([1, 2, 3]);
+        expect(() => iterable.distinct(null)).to.throw(ReferenceError);
+        expect(() => iterable.distinct(undefined)).to.throw(ReferenceError);
     });
 
     describe('from arrays', () => {
@@ -78,11 +98,11 @@ describe('Iterable', () => {
         });
 
         it('.map should map all items', () => {
-            const items = iterable.map(x => x.length).items();
+            const items = iterable.map((x, i) => x + i.toString()).items();
             expect(items.length).to.equal(10);
-            expect(items[0]).to.equal(5);
-            expect(items[5]).to.equal(7);
-            expect(items[9]).to.equal(7);
+            expect(items[0]).to.equal('alpha0');
+            expect(items[5]).to.equal('foxtrot5');
+            expect(items[9]).to.equal('charlie9');
         });
 
         it('.mapMany should map all items', () => {
@@ -101,6 +121,14 @@ describe('Iterable', () => {
 
         it('.some should return false when entity exists', () => {
             expect(iterable.some(x => x.includes('z'))).to.be.false;
+        });
+
+        it('.every should return true when all elements match condition', () => {
+            expect(iterable.every((x, i) => x.length > 0 && i >= 0)).to.be.true;
+        });
+
+        it('.every should return false when any element does not match condition', () => {
+            expect(iterable.every(x => x === 'alpha')).to.be.false;
         });
     });
 
@@ -331,6 +359,14 @@ describe('Iterable', () => {
             expect(items.filter(x => x === 'charlie').length).to.equal(1);
         });
 
+        it('.distinct should be invocable multiple times', () => {
+            const items = iterable.distinct(x => x);
+
+            // assert items can be iterated on multiple times
+            expect(items.count()).to.equal(9);
+            expect(items.count()).to.equal(9);
+        });
+
         it('.filter should filter items', () => {
             const items = iterable.filter(x => x.includes('l')).items();
             expect(items.length).to.equal(7);
@@ -340,9 +376,36 @@ describe('Iterable', () => {
         it('.first should get the first item', () => {
             expect(iterable.first()).to.equal('alpha');
         });
+        it('.first should support empty string', () => {
+            iterable = new Iterable(['']);
+            expect(iterable.first()).to.equal('');
+        });
+
+        it('.first should support 0', () => {
+            const iterable = new Iterable([0]);
+            expect(iterable.first()).to.equal(0);
+        });
+
+        it('.first should support false', () => {
+            const iterable = new Iterable([false]);
+            expect(iterable.first()).to.equal(false);
+        });
+
+        it('.first should support undefined', () => {
+            const iterable = new Iterable([undefined]);
+            expect(iterable.first()).to.equal(undefined);
+        });
 
         it('.filter should return first filtered item', () => {
             expect(iterable.first(x => x.startsWith('b'))).to.equal('bravo');
+        });
+
+        it('.filter should be invocable multiple times', () => {
+            const filtered = iterable.filter(x => x.startsWith('b'));
+
+            // assert filtered can be iterated on multiple times
+            expect(filtered.first()).to.equal('bravo');
+            expect(filtered.first()).to.equal('bravo');
         });
 
         it('.map should map all items', () => {
@@ -351,6 +414,14 @@ describe('Iterable', () => {
             expect(items[0]).to.equal(5);
             expect(items[5]).to.equal(7);
             expect(items[9]).to.equal(7);
+        });
+
+        it('.map should be invocable multiple times', () => {
+            const items = iterable.map(x => x + '_map');
+
+            // assert items can be iterated on multiple times
+            expect(items.first()).to.equal('alpha_map');
+            expect(items.first()).to.equal('alpha_map');
         });
 
         it('.mapMany should map all items', () => {

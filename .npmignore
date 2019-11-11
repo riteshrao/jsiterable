@@ -1,10 +1,12 @@
 /*.tgz
+*.map
 /node_modules/
 /.nyc_output/
 /src/
 /coverage/
 /src/
 /test/
+/.prettier*
 /.mocharc.json
 /tsconfig.json
 /tslint.json
