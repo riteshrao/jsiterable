@@ -57,7 +57,18 @@ export class Iterable<T> implements LibIterable<T> {
             throw new ReferenceError(`Invalid keySelector. keySelector is ${keySelector}`);
         }
 
-        return new Iterable<T>(this._distinctGenerator.bind(this, keySelector));
+        const src = this._source;
+        return new Iterable<T>(function* () {
+            const set = new Set<T>();
+            let index = 0;
+            for (const item of src) {
+                const key = keySelector(item, index++);
+                if (!set.has(key)) {
+                    set.add(key);
+                    yield item;
+                }
+            }
+        });
     }
 
     /**
@@ -71,7 +82,15 @@ export class Iterable<T> implements LibIterable<T> {
             throw new ReferenceError(`Invalid filter. filter is '${filter}'`);
         }
 
-        return new Iterable<T>(this._filterGenerator.bind(this, filter));
+        const src = this._source;
+        return new Iterable<T>(function* () {
+            let index = 0;
+            for (const item of src) {
+                if (filter(item, index++)) {
+                    yield item;
+                }
+            }
+        });
     }
 
     /**
@@ -113,7 +132,13 @@ export class Iterable<T> implements LibIterable<T> {
      * @memberof Iterable
      */
     map<V>(selector: (item: T, index: number) => V): Iterable<V> {
-        return new Iterable<V>(this._mapGenerator.bind(this, selector));
+        const src = this._source;
+        return new Iterable<V>(function* () {
+            let index = 0;
+            for (const item of src) {
+                yield selector(item, index++);
+            }
+        });
     }
 
     /**
@@ -124,7 +149,13 @@ export class Iterable<T> implements LibIterable<T> {
      * @memberof Iterable
      */
     mapMany<V>(selector: (item: T, index: number) => LibIterable<V>): Iterable<V> {
-        return new Iterable<V>(this._mapManyGenerator.bind(this, selector));
+        const src = this._source;
+        return new Iterable<V>(function* () {
+            let index = 0;
+            for (const item of src) {
+                yield* selector(item, index++);
+            }
+        });
     }
 
     /**
@@ -162,6 +193,20 @@ export class Iterable<T> implements LibIterable<T> {
     }
 
     /**
+     * @description Returns a new Iterable consisting of the elements in the
+     * current object followed by that of the input argument.
+     * @param other {LibIterable<T>} An iterable
+     * @returns {Iterable<T>} a new Iterable that contains elements from both sources
+     */
+    concat(other: LibIterable<T>): Iterable<T> {
+        const src = this._source;
+        return new Iterable(function* () {
+            yield* src;
+            yield* other;
+        });
+    }
+
+    /**
      * @description Gets an empty iterable.
      * @static
      * @template T The element type of the iterable.
@@ -171,41 +216,32 @@ export class Iterable<T> implements LibIterable<T> {
     static empty<T>(): Iterable<T> {
         return new Iterable<T>([]);
     }
+}
 
-    private *_distinctGenerator(keySelector: (item: T, index: number) => any) {
-        const set = new Set<T>();
-        let index = 0;
-        for (const item of this._source) {
-            const key = keySelector(item, index++);
-            if (!set.has(key)) {
-                set.add(key);
-                yield item;
-            }
+/**
+ * Returns an Iterable of the specified object's keys.
+ * @param obj {any} An object
+ * @returns {Iterable<string>} The keys of the specified object.
+ */
+export function objectKeys(obj: any): Iterable<string> {
+    return new Iterable(function* () {
+        for (const key in obj) {
+            yield key;
         }
-    }
+    });
+}
 
-    private *_filterGenerator(filter: (item: T, index: number) => boolean) {
-        let index = 0;
-        for (const item of this._source) {
-            if (filter(item, index++)) {
-                yield item;
-            }
+/**
+ * Returns an Iterable of the specified object's values.
+ * @param obj {any} An object
+ * @returns {Iterable<any>} The values of the specified object.
+ */
+export function objectValues(obj: any): Iterable<any> {
+    return new Iterable(function* () {
+        for (const key in obj) {
+            yield obj[key];
         }
-    }
-
-    private *_mapGenerator<V>(selector: (item: T, index: number) => LibIterable<V>) {
-        let index = 0;
-        for (const item of this._source) {
-            yield selector(item, index++);
-        }
-    }
-
-    private *_mapManyGenerator<V>(selector: (item: T, index: number) => LibIterable<V>) {
-        let index = 0;
-        for (const item of this._source) {
-            yield* selector(item, index++);
-        }
-    }
+    });
 }
 
 export default Iterable;

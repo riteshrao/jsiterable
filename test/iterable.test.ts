@@ -1,6 +1,6 @@
 import 'mocha';
 import { expect } from 'chai';
-import Iterable from '../src';
+import Iterable, { objectKeys, objectValues } from '../src';
 
 describe('Iterable', () => {
     it('.ctor should throw when source is not iterable', () => {
@@ -440,6 +440,70 @@ describe('Iterable', () => {
 
         it('.some should return false when entity exists', () => {
             expect(iterable.some(x => x.includes('z'))).to.be.false;
+        });
+    });
+
+    describe('concat', () => {
+        it('can concatenate with arrays', () => {
+            const src = new Iterable(['a', 'b']);
+            const result = src.concat(['c', 'd']);
+            expect(result.items()).to.eql(['a', 'b', 'c', 'd']);
+        });
+
+        it('can concatenate with empty iterable', () => {
+            const src = new Iterable(['a', 'b']);
+            const result = src.concat(Iterable.empty());
+            expect(result.items()).to.eql(['a', 'b']);
+        });
+
+        it('can concatenate with lazy iterable', () => {
+            const src = new Iterable(['a', 'b']);
+            const result = src.concat(new Iterable(() => ['c', 'd']));
+            expect(result.items()).to.eql(['a', 'b', 'c', 'd']);
+        });
+    });
+
+    describe('objectKeys', () => {
+        it('expect empty object to have 0 keys', () => {
+            const keys = objectKeys({});
+            expect(keys.count()).to.equal(0);
+        });
+
+        it('expect null object to have 0 keys', () => {
+            const keys = objectKeys(null);
+            expect(keys.count()).to.equal(0);
+        });
+
+        it('expect undefined object to have 0 keys', () => {
+            const keys = objectKeys(undefined);
+            expect(keys.count()).to.equal(0);
+        });
+
+        it('expect non-empty object to have keys', () => {
+            const keys = objectKeys({ a: 1, b: 2 });
+            expect(keys.items()).to.eql(['a', 'b']);
+        });
+    });
+
+    describe('objectValues', () => {
+        it('expect empty object to have 0 values', () => {
+            const keys = objectValues({});
+            expect(keys.count()).to.equal(0);
+        });
+
+        it('expect null object to have 0 values', () => {
+            const keys = objectValues(null);
+            expect(keys.count()).to.equal(0);
+        });
+
+        it('expect undefined object to have 0 values', () => {
+            const keys = objectValues(undefined);
+            expect(keys.count()).to.equal(0);
+        });
+
+        it('expect non-empty object to have values', () => {
+            const keys = objectValues({ a: 1, b: 2 });
+            expect(keys.items()).to.eql([1, 2]);
         });
     });
 });
