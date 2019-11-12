@@ -1,6 +1,6 @@
 import 'mocha';
 import { expect } from 'chai';
-import Iterable, { objectKeys, objectValues } from '../src';
+import Iterable from '../src';
 
 describe('Iterable', () => {
     it('.ctor should throw when source is not iterable', () => {
@@ -463,46 +463,46 @@ describe('Iterable', () => {
         });
     });
 
-    describe('objectKeys', () => {
+    describe('object keys', () => {
         it('expect empty object to have 0 keys', () => {
-            const keys = objectKeys({});
+            const keys = Iterable.keys({});
             expect(keys.count()).to.equal(0);
         });
 
         it('expect null object to have 0 keys', () => {
-            const keys = objectKeys(null);
+            const keys = Iterable.keys(null);
             expect(keys.count()).to.equal(0);
         });
 
         it('expect undefined object to have 0 keys', () => {
-            const keys = objectKeys(undefined);
+            const keys = Iterable.keys(undefined);
             expect(keys.count()).to.equal(0);
         });
 
         it('expect non-empty object to have keys', () => {
-            const keys = objectKeys({ a: 1, b: 2 });
+            const keys = Iterable.keys({ a: 1, b: 2 });
             expect(keys.items()).to.eql(['a', 'b']);
         });
     });
 
-    describe('objectValues', () => {
+    describe('object values', () => {
         it('expect empty object to have 0 values', () => {
-            const keys = objectValues({});
+            const keys = Iterable.values({});
             expect(keys.count()).to.equal(0);
         });
 
         it('expect null object to have 0 values', () => {
-            const keys = objectValues(null);
+            const keys = Iterable.values(null);
             expect(keys.count()).to.equal(0);
         });
 
         it('expect undefined object to have 0 values', () => {
-            const keys = objectValues(undefined);
+            const keys = Iterable.values(undefined);
             expect(keys.count()).to.equal(0);
         });
 
         it('expect non-empty object to have values', () => {
-            const keys = objectValues({ a: 1, b: 2 });
+            const keys = Iterable.values({ a: 1, b: 2 });
             expect(keys.items()).to.eql([1, 2]);
         });
     });

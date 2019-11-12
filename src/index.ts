@@ -216,32 +216,32 @@ export class Iterable<T> implements LibIterable<T> {
     static empty<T>(): Iterable<T> {
         return new Iterable<T>([]);
     }
-}
 
-/**
- * Returns an Iterable of the specified object's keys.
- * @param obj {any} An object
- * @returns {Iterable<string>} The keys of the specified object.
- */
-export function objectKeys(obj: any): Iterable<string> {
-    return new Iterable(function* () {
-        for (const key in obj) {
-            yield key;
-        }
-    });
-}
+    /**
+     * Returns an Iterable of the specified object's keys.
+     * @param obj {any} An object
+     * @returns {Iterable<string>} The keys of the specified object.
+     */
+    static keys(obj: any): Iterable<string> {
+        return new Iterable(function* () {
+            for (const key in obj) {
+                yield key;
+            }
+        });
+    }
 
-/**
- * Returns an Iterable of the specified object's values.
- * @param obj {any} An object
- * @returns {Iterable<any>} The values of the specified object.
- */
-export function objectValues(obj: any): Iterable<any> {
-    return new Iterable(function* () {
-        for (const key in obj) {
-            yield obj[key];
-        }
-    });
+    /**
+     * Returns an Iterable of the specified object's values.
+     * @param obj {any} An object
+     * @returns {Iterable<any>} The values of the specified object.
+     */
+    static values(obj: any): Iterable<any> {
+        return new Iterable(function* () {
+            for (const key in obj) {
+                yield obj[key];
+            }
+        });
+    }
 }
 
 export default Iterable;
