@@ -3,13 +3,13 @@ import { expect } from 'chai';
 import Iterable from '../src';
 
 describe('Iterable', () => {
-    it('.ctor should throw when source is not iterable', () => {
-        expect(() => new Iterable(1 as any)).to.throw(ReferenceError);
+    it('.items should throw when source is not iterable', () => {
+        expect(() => new Iterable(1 as any).items()).to.throw(TypeError);
     });
 
-    it('.ctor shoud throw when source is null or undefined', () => {
-        expect(() => new Iterable(null)).to.throw(ReferenceError);
-        expect(() => new Iterable(undefined)).to.throw(ReferenceError);
+    it('.items shoud throw when source is null or undefined', () => {
+        expect(() => new Iterable(null).items()).to.throw(TypeError);
+        expect(() => new Iterable(undefined).items()).to.throw(TypeError);
     });
 
     it('.ctor shoud support generators', () => {
