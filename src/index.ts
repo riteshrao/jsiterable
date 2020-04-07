@@ -8,32 +8,18 @@ import LibIterable from './types';
  * @template T
  */
 export class Iterable<T> implements LibIterable<T> {
-    private readonly _source: LibIterable<T>;
-
     /**
      * Creates an instance of Iterable.
      * @param {Iterable<T>} source The source iterable to use. This can be any object that supports
      * the {Symbol.iterator} symbol, or a function that returns an Iterable (e.g., a generator)
      * @memberof Iterable
      */
-    constructor(source: LibIterable<T> | (() => LibIterable<T>)) {
-        if (typeof source === 'function') {
-            // source is an function that returns an Iterable. Get its iterator lazily:
-            this._source = {
-                [Symbol.iterator]: () => source()[Symbol.iterator]()
-            };
-        } else if (source && typeof source[Symbol.iterator] === 'function') {
-            // source is a es6 iterable, use as-is:
-            this._source = source;
-        } else {
-            throw new ReferenceError(
-                `Invalid source. source does not define a member for [Symbol.iterator]. Only iterables and iterable like sources are allowed`
-            );
-        }
+    constructor(private readonly source: LibIterable<T> | (() => LibIterable<T>)) {
     }
 
     [Symbol.iterator](): Iterator<T> {
-        return this._source[Symbol.iterator]();
+        const src = this.source;
+        return (typeof src === 'function' ? src() : src)[Symbol.iterator]();
     }
 
     /**
@@ -43,7 +29,7 @@ export class Iterable<T> implements LibIterable<T> {
      */
     count(): number {
         let num = 0;
-        for (const _ of this._source) { ++num; }
+        for (const _ of this) { ++num; }
         return num;
     }
 
@@ -57,7 +43,7 @@ export class Iterable<T> implements LibIterable<T> {
             throw new ReferenceError(`Invalid keySelector. keySelector is ${keySelector}`);
         }
 
-        const src = this._source;
+        const src = this;
         return new Iterable<T>(function* () {
             const set = new Set<T>();
             let index = 0;
@@ -82,7 +68,7 @@ export class Iterable<T> implements LibIterable<T> {
             throw new ReferenceError(`Invalid filter. filter is '${filter}'`);
         }
 
-        const src = this._source;
+        const src = this;
         return new Iterable<T>(function* () {
             let index = 0;
             for (const item of src) {
@@ -102,7 +88,7 @@ export class Iterable<T> implements LibIterable<T> {
     first(filter?: (item: T, index: number) => boolean): T {
         if (filter) {
             let index = 0;
-            for (const item of this._source) {
+            for (const item of this) {
                 if (filter(item, index++)) {
                     return item;
                 }
@@ -110,7 +96,7 @@ export class Iterable<T> implements LibIterable<T> {
 
             return null;
         } else {
-            const { done, value } = this._source[Symbol.iterator]().next();
+            const { done, value } = this[Symbol.iterator]().next();
             return done ? null : value;
         }
     }
@@ -121,7 +107,7 @@ export class Iterable<T> implements LibIterable<T> {
      * @memberof Iterable
      */
     items(): T[] {
-        return [...this._source];
+        return [...this];
     }
 
     /**
@@ -132,7 +118,7 @@ export class Iterable<T> implements LibIterable<T> {
      * @memberof Iterable
      */
     map<V>(selector: (item: T, index: number) => V): Iterable<V> {
-        const src = this._source;
+        const src = this;
         return new Iterable<V>(function* () {
             let index = 0;
             for (const item of src) {
@@ -149,7 +135,7 @@ export class Iterable<T> implements LibIterable<T> {
      * @memberof Iterable
      */
     mapMany<V>(selector: (item: T, index: number) => LibIterable<V>): Iterable<V> {
-        const src = this._source;
+        const src = this;
         return new Iterable<V>(function* () {
             let index = 0;
             for (const item of src) {
@@ -166,7 +152,7 @@ export class Iterable<T> implements LibIterable<T> {
      */
     some(filter: (item: T, index: number) => boolean): boolean {
         let index = 0;
-        for (const item of this._source) {
+        for (const item of this) {
             if (filter(item, index++)) {
                 return true;
             }
@@ -183,7 +169,7 @@ export class Iterable<T> implements LibIterable<T> {
      */
     every(test: (item: T, index: number) => boolean): boolean {
         let index = 0;
-        for (const item of this._source) {
+        for (const item of this) {
             if (!test(item, index++)) {
                 return false;
             }
@@ -199,7 +185,7 @@ export class Iterable<T> implements LibIterable<T> {
      * @returns {Iterable<T>} a new Iterable that contains elements from both sources
      */
     concat(other: LibIterable<T>): Iterable<T> {
-        const src = this._source;
+        const src = this;
         return new Iterable(function* () {
             yield* src;
             yield* other;
