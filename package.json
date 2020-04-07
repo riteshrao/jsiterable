@@ -26,18 +26,18 @@
     "homepage": "https://github.com/riteshrao/jsiterable#readme",
     "sideEffects": false,
     "devDependencies": {
-        "@types/chai": "^4.1.7",
-        "@types/mocha": "^5.2.6",
+        "@types/chai": "^4.2.11",
+        "@types/mocha": "^7.0.2",
         "chai": "^4.2.0",
-        "mocha": "^6.1.4",
-        "nyc": "^14.1.1",
+        "mocha": "^7.1.1",
+        "nyc": "^15.0.1",
         "opener": "^1.5.1",
-        "rimraf": "^2.6.3",
-        "source-map-support": "^0.5.11",
-        "ts-node": "^8.0.3",
-        "tslint": "^5.14.0",
+        "rimraf": "^3.0.2",
+        "source-map-support": "^0.5.16",
+        "ts-node": "^8.8.2",
+        "tslint": "^6.1.1",
         "tslint-no-unused-expression-chai": "^0.1.4",
-        "typescript": "^3.3.3333"
+        "typescript": "^3.8.3"
     },
     "nyc": {
         "all": true,
